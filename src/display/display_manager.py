@@ -2,6 +2,7 @@ import fnmatch
 import json
 import logging
 
+from display.monitor_display import MonitorDisplay
 from utils.image_utils import resize_image, change_orientation, apply_image_enhancement
 from display.mock_display import MockDisplay
 
@@ -43,6 +44,8 @@ class DisplayManager:
             self.display = MockDisplay(device_config)
         elif display_type == "inky":
             self.display = InkyDisplay(device_config)
+        elif display_type == "monitor":
+            self.display = MonitorDisplay(device_config)
         elif fnmatch.fnmatch(display_type, "epd*in*"):  
             # derived from waveshare epd - we assume here that will be consistent
             # otherwise we will have to enshring the manufacturer in the 
