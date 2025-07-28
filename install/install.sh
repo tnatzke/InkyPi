@@ -46,12 +46,16 @@ PIP_REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
 # empty means no WS support required, otherwise we expect the type of display
 # as per the WS naming convention.
 WS_TYPE=""
+MONITOR_FLAG=0
 WS_REQUIREMENTS_FILE="$SCRIPT_DIR/ws-requirements.txt"
 
 # Parse the agumments, looking for the -W option.
 parse_arguments() {
-    while getopts ":W:" opt; do
+    while getopts "M:W:" opt; do
         case $opt in
+            M) MONITOR_FLAG=1
+              echo "Optional parameter M is set for monitor support."
+              ;;
             W) WS_TYPE=$OPTARG
                 echo "Optional parameter WS is set for Waveshare support.  Screen type is: $WS_TYPE"
                 ;;
@@ -105,39 +109,43 @@ fetch_waveshare_driver() {
 }
 
 enable_interfaces(){
-  echo "Enabling interfaces required for $APPNAME"
-  #enable spi
-  sudo sed -i 's/^dtparam=spi=.*/dtparam=spi=on/' /boot/config.txt
-  sudo sed -i 's/^#dtparam=spi=.*/dtparam=spi=on/' /boot/config.txt
-  sudo raspi-config nonint do_spi 0
-  echo_success "\tSPI Interface has been enabled."
-  #enable i2c
-  sudo sed -i 's/^dtparam=i2c_arm=.*/dtparam=i2c_arm=on/' /boot/config.txt
-  sudo sed -i 's/^#dtparam=i2c_arm=.*/dtparam=i2c_arm=on/' /boot/config.txt
-  sudo raspi-config nonint do_i2c 0
-  echo_success "\tI2C Interface has been enabled."
-
-  # Is a Waveshare device specified as an install parameter?
-  if [[ -n "$WS_TYPE" ]]; then
-    # WS parameter is set for Waveshare support so ensure that both CS lines
-    # are enabled in the config.txt file.  This is different to INKY which
-    # only needs one line set.n
-    echo "Enabling both CS lines for SPI interface in config.txt"
-    if ! grep -E -q '^[[:space:]]*dtoverlay=spi0-2cs' /boot/firmware/config.txt; then
-        sed -i '/^dtparam=spi=on/a dtoverlay=spi0-2cs' /boot/firmware/config.txt
-    else
-        echo "dtoverlay for spi0-2cs already specified"
-    fi
+  if [[ "$MONITOR_FLAG" -eq 1 ]]
+      echo "Skipping enabling interfaces. Not required for $APPNAME"
   else
-    # TODO - check if really need the dtparam set for INKY as this seems to be 
-    # only for the older screens (as per INKY docs)
-    echo "Enabling single CS line for SPI interface in config.txt"
-    if ! grep -E -q '^[[:space:]]*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then
-        sed -i '/^dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt
+    echo "Enabling interfaces required for $APPNAME"
+    #enable spi
+    sudo sed -i 's/^dtparam=spi=.*/dtparam=spi=on/' /boot/config.txt
+    sudo sed -i 's/^#dtparam=spi=.*/dtparam=spi=on/' /boot/config.txt
+    sudo raspi-config nonint do_spi 0
+    echo_success "\tSPI Interface has been enabled."
+    #enable i2c
+    sudo sed -i 's/^dtparam=i2c_arm=.*/dtparam=i2c_arm=on/' /boot/config.txt
+    sudo sed -i 's/^#dtparam=i2c_arm=.*/dtparam=i2c_arm=on/' /boot/config.txt
+    sudo raspi-config nonint do_i2c 0
+    echo_success "\tI2C Interface has been enabled."
+
+    # Is a Waveshare device specified as an install parameter?
+    if [[ -n "$WS_TYPE" ]]; then
+      # WS parameter is set for Waveshare support so ensure that both CS lines
+      # are enabled in the config.txt file.  This is different to INKY which
+      # only needs one line set.n
+      echo "Enabling both CS lines for SPI interface in config.txt"
+      if ! grep -E -q '^[[:space:]]*dtoverlay=spi0-2cs' /boot/firmware/config.txt; then
+          sed -i '/^dtparam=spi=on/a dtoverlay=spi0-2cs' /boot/firmware/config.txt
+      else
+          echo "dtoverlay for spi0-2cs already specified"
+      fi
     else
-        echo "dtoverlay for spi0-0cs already specified"
+      # TODO - check if really need the dtparam set for INKY as this seems to be
+      # only for the older screens (as per INKY docs)
+      echo "Enabling single CS line for SPI interface in config.txt"
+      if ! grep -E -q '^[[:space:]]*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then
+          sed -i '/^dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt
+      else
+          echo "dtoverlay for spi0-0cs already specified"
+      fi
     fi
-  fi 
+  fi
 }
 
 show_loader() {
@@ -266,6 +274,21 @@ update_config() {
           echo "}" >> "$DEVICE_JSON"  # Add trailing }
           echo "Added display_type: $WS_TYPE"
       fi
+  elif [[ "$MONITOR_FLAG" -eq 1 ]]; then
+      local DEVICE_JSON="$CONFIG_DIR/device.json"
+      if grep -q '"display_type":' "$DEVICE_JSON"; then
+          # Update existing display_type value
+          sed -i "s/\"display_type\": \".*\"/\"display_type\": \"monitor\"/" "$DEVICE_JSON"
+          echo "Updated display_type to: monitor"
+      else
+          # Append display_type safely, ensuring proper comma placement
+          if grep -q '}$' "$DEVICE_JSON"; then
+              sed -i '$s/}/,/' "$DEVICE_JSON"  # Replace last } with a comma
+          fi
+          echo "  \"display_type\": \"monitor\"" >> "$DEVICE_JSON"
+          echo "}" >> "$DEVICE_JSON"  # Add trailing }
+          echo "Added display_type: monitor"
+      fi
   else
       echo "Config not updated as WS_TYPE flag is not set"
   fi
@@ -353,9 +376,6 @@ copy_project
 create_venv
 install_executable
 install_config
-# update the config file with additional WS if defined.
-if [[ -n "$WS_TYPE" ]]; then
-  update_config
-fi
+update_config
 install_app_service
 ask_for_reboot
