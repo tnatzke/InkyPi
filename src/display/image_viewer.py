@@ -1,3 +1,4 @@
+import logging
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
@@ -5,10 +6,17 @@ import hashlib
 import time
 import argparse
 
+logging.config.fileConfig(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'logging.conf'))
+logger = logging.getLogger(__name__)
+
 class ImageViewerApp:
     def __init__(self, master, image_path, timeout):
         self.master = master
 
+        logger.info("Hide mouse")
+        self.master.config(cursor="none")
+
+        logger.info("Set full screen")
         self.master.attributes('-fullscreen', True)  # Set window to fullscreen
         self.master.bind('<Escape>', lambda e: self.master.destroy())  # Exit on Escape key
 
@@ -48,18 +56,25 @@ class ImageViewerApp:
         if new_hash != self.current_hash:
             self.current_hash = new_hash
             self.load_image()
-        self.master.after(self.timeout, self.check_for_changes) # Check every 1 second
+        self.master.after(self.timeout, self.check_for_changes)  # Check every 1 second
+
 
 if __name__ == "__main__":
     # os.environ['DISPLAY'] = ':0.0'
 
     parser = argparse.ArgumentParser(description='A simple program that displays image file changes.')
 
-    parser.add_argument('-f', '--filename', type=str, required=True, help='Filename of a image to monitor.') # Optional argument with a value
-    parser.add_argument('-t', '--timeout', type=int, required=True, help='How often the file should be checked for changes.') # Flag (boolean)
+    parser.add_argument('-f', '--filename', type=str, required=True,
+                        help='Filename of a image to monitor.')  # Optional argument with a value
+    parser.add_argument('-t', '--timeout', type=int, required=True,
+                        help='How often the file should be checked for changes.')  # Flag (boolean)
 
     args = parser.parse_args()
+    logger.info(f"Start up arguments: {args}")
 
     root = tk.Tk()
+    logger.info("Setup root GUI.")
     app = ImageViewerApp(root, args.filename, args.timeout)
+
+    logger.info("Starting main loop.")
     root.mainloop()
