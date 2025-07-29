@@ -51,6 +51,8 @@ class ImageViewerApp:
         self.master.after(self.timeout, self.check_for_changes) # Check every 1 second
 
 if __name__ == "__main__":
+    os.environ['DISPLAY'] = ':0.0'
+
     parser = argparse.ArgumentParser(description='A simple program that displays image file changes.')
 
     parser.add_argument('-f', '--filename', type=str, required=True, help='Filename of a image to monitor.') # Optional argument with a value
