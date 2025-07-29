@@ -1,4 +1,4 @@
-import logging
+import logging.config
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
