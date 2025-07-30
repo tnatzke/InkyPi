@@ -54,11 +54,12 @@ class MonitorDisplay(AbstractDisplay):
         atexit.register(self.cleanup_display)
 
         # store display resolution in device config
-        # if not self.device_config.get_config("resolution"):
-        #     self.device_config.update_value(
-        #         "resolution",
-        #         [int(self.screen_width), int(self.screen_height)],
-        #         write=True)
+        logger.info(f"Saving resolution for monitor display {self.screen_width} x {self.screen_height}")
+        if not self.device_config.get_config("resolution"):
+            self.device_config.update_value(
+                "resolution",
+                [int(self.screen_width), int(self.screen_height)],
+                write=True)
 
     def display_image(self, image, image_settings=[]):
         """
@@ -79,14 +80,14 @@ class MonitorDisplay(AbstractDisplay):
 
     def terminate_subprocess(self):
         if self.viewer.poll() is None:  # Check if the subprocess is still running
-            print(f"Terminating subprocess (PID: {self.viewer.pid})...")
+            logger.info(f"Terminating subprocess (PID: {self.viewer.pid})...")
             self.viewer.terminate()
             self.viewer.wait(timeout=5)  # Wait for a short period for graceful termination
             if self.viewer.poll() is None:
-                print("Subprocess did not terminate gracefully, killing...")
+                logger.info("Subprocess did not terminate gracefully, killing...")
                 self.viewer.kill()
         else:
-            print("Subprocess already terminated.")
+            logger.info("Subprocess already terminated.")
 
     def cleanup_display(self):
         self.terminate_subprocess()
