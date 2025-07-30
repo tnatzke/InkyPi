@@ -109,7 +109,7 @@ fetch_waveshare_driver() {
 }
 
 enable_interfaces(){
-  if [[ "$MONITOR_FLAG" -eq 1 ]]
+  if [[ "$MONITOR_FLAG" -eq 1 ]]; then
       echo "Skipping enabling interfaces. Not required for $APPNAME"
   else
     echo "Enabling interfaces required for $APPNAME"
