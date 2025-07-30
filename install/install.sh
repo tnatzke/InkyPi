@@ -110,7 +110,7 @@ fetch_waveshare_driver() {
 
 enable_interfaces(){
   if [[ "$MONITOR_FLAG" -eq 1 ]]; then
-      echo "Skipping enabling interfaces. Not required for $APPNAME"
+      echo "Skipping enabling interfaces. Not required for monitor solution for $APPNAME"
   else
     echo "Enabling interfaces required for $APPNAME"
     #enable spi
