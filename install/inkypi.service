@@ -4,7 +4,7 @@ After=network-online.target graphical.target
 Wants=network-online.target graphical.target
 
 [Service]
-User=root
+User=tmn
 Environment=DISPLAY=:0.0
 RuntimeDirectory=inkypi
 WorkingDirectory=/run/inkypi
