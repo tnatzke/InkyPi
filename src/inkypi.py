@@ -76,6 +76,6 @@ if __name__ == '__main__':
     try:
         # Run the Flask app
         app.secret_key = str(random.randint(100000,999999))
-        serve(app, host="0.0.0.0", port=80, threads=1)
+        serve(app, host="0.0.0.0", port=8080, threads=1)
     finally:
         refresh_task.stop()
