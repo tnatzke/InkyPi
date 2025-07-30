@@ -51,6 +51,8 @@ class ImageViewerApp:
             self.label.config(text=f"Error loading image: {e}")
             self.tk_image = None
 
+        self.master.attributes('-fullscreen', True)
+
     def check_for_changes(self):
         new_hash = self.get_file_hash()
         if new_hash != self.current_hash:
