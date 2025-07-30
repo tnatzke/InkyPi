@@ -51,7 +51,7 @@ WS_REQUIREMENTS_FILE="$SCRIPT_DIR/ws-requirements.txt"
 
 # Parse the agumments, looking for the -W option.
 parse_arguments() {
-    while getopts "M:W:" opt; do
+    while getopts ":MW:" opt; do
         case $opt in
             M) MONITOR_FLAG=1
               echo "Optional parameter M is set for monitor support."
