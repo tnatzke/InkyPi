@@ -54,7 +54,6 @@ class MotionTask:
 
     def turn_on_monitor(self):
         """Turns on the HDMI monitor using wlr-randr."""
-        global display_on
         try:
             subprocess.run(["wlr-randr", "--output", self.hdmi_output_name, "--on"], check=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned on.")
@@ -97,7 +96,7 @@ class MotionTask:
         try:
             while True:
                 with self.condition:
-                    if display_on and (time.time() - self.last_motion_time > self.no_motion_delay):
+                    if self.display_on and (time.time() - self.last_motion_time > self.no_motion_delay):
                         self.turn_off_monitor()
                     self.condition.wait(timeout=1)  # Check every second
                     if not self.running:
@@ -106,5 +105,5 @@ class MotionTask:
             logger.info("\nExiting script.")
         finally:
             # Ensure the display is turned on before exiting (optional)
-            if not display_on:
+            if not self.display_on:
                 self.turn_on_monitor()
