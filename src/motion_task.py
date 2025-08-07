@@ -27,7 +27,6 @@ class MotionTask:
     pir: MotionSensor
 
     def __init__(self):
-        os.environ['DISPLAY'] = ":0"
         # Initialize the PIR sensor
         self.pir = MotionSensor(self.pir_pin)
         # Attach event handlers for motion and no motion
@@ -44,7 +43,7 @@ class MotionTask:
     def turn_off_monitor(self):
         """Turns off the HDMI monitor using wlr-randr."""
         try:
-            subprocess.run(["wlr-randr", "--output", self.hdmi_output_name, "--off"], check=True)
+            subprocess.run([f"wlr-randr --output {self.hdmi_output_name} --off"], check=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned off.")
             self.display_on = False
         except subprocess.CalledProcessError as e:
@@ -55,7 +54,7 @@ class MotionTask:
     def turn_on_monitor(self):
         """Turns on the HDMI monitor using wlr-randr."""
         try:
-            subprocess.run(["wlr-randr", "--output", self.hdmi_output_name, "--on"], check=True)
+            subprocess.run([f"wlr-randr --output {self.hdmi_output_name} --on"], check=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned on.")
             self.display_on = True
         except subprocess.CalledProcessError as e:
