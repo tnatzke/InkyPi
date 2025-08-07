@@ -71,7 +71,7 @@ if __name__ == '__main__':
     motion_task.start()
 
     # display default inkypi image on startup
-    if device_config.get_config("startup") is True:
+    if device_config.get_config("startup") is True or device_config.get_config("always-show-startup") is True:
         logger.info("Startup flag is set, displaying startup image")
         img = generate_startup_image(device_config.get_resolution())
         display_manager.display_image(img)
