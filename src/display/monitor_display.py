@@ -38,27 +38,33 @@ class MonitorDisplay(AbstractDisplay):
             ValueError: If the resolution cannot be retrieved or stored.
         """
 
-        root = tk.Tk()
-        root.attributes('-fullscreen', True)
-        self.screen_width = root.winfo_screenwidth()
-        self.screen_height = root.winfo_screenheight()
-        root.destroy()
+        config_resolution = self.device_config.get_config("resolution")
+        if not config_resolution:
+            root = tk.Tk()
+            root.attributes('-fullscreen', True)
+            self.screen_width = root.winfo_screenwidth()
+            self.screen_height = root.winfo_screenheight()
+            root.destroy()
+
+            # store display resolution in device config
+            logger.info(f"Saving resolution for monitor display {self.screen_width} x {self.screen_height}")
+            self.device_config.update_value(
+                "resolution",
+                [int(self.screen_width), int(self.screen_height)],
+                write=True)
+        else:
+            self.screen_width = config_resolution[0]
+            self.screen_height = config_resolution[1]
 
         # Define the path to the subprocess script and its arguments
-        subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f", self.device_config.current_transformed_image_file,
+        subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f",
+                             self.device_config.current_transformed_image_file,
                              "-t", "3000"]
 
         # Start the subprocess
         self.viewer = subprocess.Popen(subprocess_script)
         atexit.register(self.cleanup_display)
 
-        # store display resolution in device config
-        logger.info(f"Saving resolution for monitor display {self.screen_width} x {self.screen_height}")
-        if not self.device_config.get_config("resolution"):
-            self.device_config.update_value(
-                "resolution",
-                [int(self.screen_width), int(self.screen_height)],
-                write=True)
 
     def display_image(self, image, image_settings=[]):
         """
