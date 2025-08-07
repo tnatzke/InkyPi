@@ -42,6 +42,7 @@ class MonitorDisplay(AbstractDisplay):
         root.attributes('-fullscreen', True)
         self.screen_width = root.winfo_screenwidth()
         self.screen_height = root.winfo_screenheight()
+        root.destroy()
 
         # Define the path to the subprocess script and its arguments
         subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f", self.device_config.current_transformed_image_file,
