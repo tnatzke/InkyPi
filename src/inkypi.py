@@ -45,7 +45,7 @@ app.jinja_loader = ChoiceLoader([FileSystemLoader(directory) for directory in te
 device_config = Config()
 display_manager = DisplayManager(device_config)
 refresh_task = RefreshTask(device_config, display_manager)
-motion_task = MotionTask(device_config, display_manager)
+motion_task = MotionTask()
 
 load_plugins(device_config.get_plugins())
 
