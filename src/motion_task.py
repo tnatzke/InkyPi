@@ -28,7 +28,7 @@ class MotionTask:
 
     def __init__(self):
         # Initialize the PIR sensor
-        self.pir = MotionSensor(self.pir_pin, queue_len=5)
+        self.pir = MotionSensor(self.pir_pin, queue_len=20)
         # Attach event handlers for motion and no motion
         self.pir.when_motion = self.motion_detected_handler
         self.pir.when_no_motion = self.no_motion_detected_handler
