@@ -43,10 +43,8 @@ class MonitorDisplay(AbstractDisplay):
         self.screen_width = root.winfo_screenwidth()
         self.screen_height = root.winfo_screenheight()
 
-        self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
-
         # Define the path to the subprocess script and its arguments
-        subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f", self.tmp_file,
+        subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f", self.device_config.current_transformed_image_file,
                              "-t", "3000"]
 
         # Start the subprocess
@@ -75,8 +73,7 @@ class MonitorDisplay(AbstractDisplay):
         Raises:
             ValueError: If no image is provided.
         """
-        with open(self.tmp_file, mode="w+b") as temp_file:
-            image.save(temp_file, format="PNG")
+        pass
 
     def terminate_subprocess(self):
         if self.viewer.poll() is None:  # Check if the subprocess is still running
@@ -91,5 +88,3 @@ class MonitorDisplay(AbstractDisplay):
 
     def cleanup_display(self):
         self.terminate_subprocess()
-        if os.path.exists(self.tmp_file):
-            os.remove(self.tmp_file)
