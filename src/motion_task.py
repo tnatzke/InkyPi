@@ -39,6 +39,7 @@ class MotionTask:
         self.lock = threading.Lock()
         self.condition = threading.Condition(self.lock)
         self.running = False
+        os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
 
     def turn_off_monitor(self):
         """Turns off the HDMI monitor using wlr-randr."""
