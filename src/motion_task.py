@@ -43,7 +43,7 @@ class MotionTask:
     def turn_off_monitor(self):
         """Turns off the HDMI monitor using wlr-randr."""
         try:
-            subprocess.run([f"wlr-randr --output {self.hdmi_output_name} --off"], check=True)
+            subprocess.call(f'wlr-randr --output {self.hdmi_output_name} --off', shell=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned off.")
             self.display_on = False
         except subprocess.CalledProcessError as e:
@@ -54,7 +54,7 @@ class MotionTask:
     def turn_on_monitor(self):
         """Turns on the HDMI monitor using wlr-randr."""
         try:
-            subprocess.run([f"wlr-randr --output {self.hdmi_output_name} --on"], check=True)
+            subprocess.call(f'wlr-randr --output {self.hdmi_output_name} --on', shell=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned on.")
             self.display_on = True
         except subprocess.CalledProcessError as e:
