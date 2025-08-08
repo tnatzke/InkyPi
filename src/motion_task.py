@@ -16,6 +16,9 @@ class MotionTask:
     # Delay in seconds before turning off the display after no motion is detected
     no_motion_delay: int = 120
 
+    # Delay in seconds before turning the montion back on
+    monitor_on_delay: int = 10
+
     # Replace 'HDMI-A-1' with the actual output name for your HDMI display.
     # You can find the output name by running 'wlr-randr' in the terminal.
     hdmi_output_name: str = "HDMI-A-1"
@@ -23,12 +26,13 @@ class MotionTask:
     # Set to True if the display is currently on, False otherwise
     display_on = True
     last_motion_time: float = time.time()  # Stores the time when motion was last detected
+    monitor_turned_off_time : float
     # Initialize the PIR sensor
     pir: MotionSensor
 
     def __init__(self):
         # Initialize the PIR sensor
-        self.pir = MotionSensor(self.pir_pin, queue_len=20)
+        self.pir = MotionSensor(self.pir_pin, queue_len=40, threshold=.7)
         # Attach event handlers for motion and no motion
         self.pir.when_motion = self.motion_detected_handler
         self.pir.when_no_motion = self.no_motion_detected_handler
@@ -47,10 +51,15 @@ class MotionTask:
             subprocess.call(f'wlr-randr --output {self.hdmi_output_name} --off', shell=True)
             logger.info(f"Monitor {self.hdmi_output_name} turned off.")
             self.display_on = False
+            self.monitor_turned_off_time = time.time()
         except subprocess.CalledProcessError as e:
             logger.info(f"Error turning off monitor: {e}")
         except Exception as e:
             logger.info(f"An unexpected error occurred: {e}")
+
+    def turn_on_monitor_with_delay(self):
+        if not self.monitor_turned_off_time or time.time() - self.monitor_turned_off_time > self.monitor_on_delay:
+            self.turn_on_monitor()
 
     def turn_on_monitor(self):
         """Turns on the HDMI monitor using wlr-randr."""
@@ -69,7 +78,7 @@ class MotionTask:
         self.last_motion_time = time.time()
 
         if not self.display_on:
-            self.turn_on_monitor()
+            self.turn_on_monitor_with_delay()
 
     def no_motion_detected_handler(self):
         """Handles no motion detection events."""
