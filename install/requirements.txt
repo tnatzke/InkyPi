@@ -14,3 +14,6 @@ psutil==7.0.0
 cysystemd==2.0.1
 waitress==3.0.2
 gpiozero==2.0.1
+google-api-python-client==2.178.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.2
