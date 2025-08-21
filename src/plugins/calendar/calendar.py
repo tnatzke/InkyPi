@@ -73,6 +73,7 @@ class Calendar(BasePlugin):
         parsed_events = []
 
         for calendar_url, color in zip(calendar_urls, colors):
+            logger.info(f"Fetching events from {calendar_url}")
             cal = self.fetch_calendar(calendar_url)
             events = recurring_ical_events.of(cal).between(start_range, end_range)
             contrast_color = self.get_contrast_color(color)
@@ -89,6 +90,7 @@ class Calendar(BasePlugin):
                 if end:
                     parsed_event['end'] = end
 
+                logger.info(f"Parsed event: {parsed_event}")
                 parsed_events.append(parsed_event)
 
         return parsed_events
