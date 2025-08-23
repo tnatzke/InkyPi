@@ -1,7 +1,7 @@
 import os
 from utils.app_utils import resolve_path, get_font
 from plugins.base_plugin.base_plugin import BasePlugin
-from constants import LOCALE_MAP, FONT_SIZES, FONT_PX_SIZES
+from plugins.calendar.constants import LOCALE_MAP, FONT_SIZES, FONT_PX_SIZES
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import icalendar
 import recurring_ical_events
