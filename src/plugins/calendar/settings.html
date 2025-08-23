@@ -90,6 +90,17 @@
     </div>
 </div>
 
+<div class="form-group">
+    <div class="form-group nowrap">
+        <label for="monthFontSize" class="form-label">Month Font Size:</label>
+        <select id="monthFontSize" name="monthFontSize" class="form-input">
+            {% for size font_px_sizes %}
+                <option value="{{ size }}">{{ size }}px</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
 <script>
     function selectView(button) {
       // Remove 'active' from all buttons
@@ -167,11 +178,13 @@
         let language = "en";
         let calendars = [{ url: '', color: '#007BFF' }];
         let fontSize = "normal";
+        let monthFontSize = 16;
 
         if (loadPluginSettings) {
             viewMode = pluginSettings.viewMode;
             language = pluginSettings.language;
             fontSize = pluginSettings.fontSize;
+            monthFontSize = pluginSettings.monthFontSize;
 
             document.getElementById('displayTitle').checked = pluginSettings.displayTitle;
             document.getElementById('displayTitle').value = pluginSettings.displayTitle;
@@ -215,6 +228,7 @@
         // populate language dropdown
         document.getElementById('language').value = language;
         document.getElementById('fontSize').value = fontSize;
+        document.getElementById('monthFontSize').value = monthFontSize;
 
         // populate calendars
         calendars.forEach(({ url, color }) => {

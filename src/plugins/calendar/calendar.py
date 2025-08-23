@@ -1,7 +1,7 @@
 import os
 from utils.app_utils import resolve_path, get_font
 from plugins.base_plugin.base_plugin import BasePlugin
-from plugins.calendar.constants import LOCALE_MAP, FONT_SIZES
+from constants import LOCALE_MAP, FONT_SIZES, FONT_PX_SIZES
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import icalendar
 import recurring_ical_events
@@ -18,6 +18,7 @@ class Calendar(BasePlugin):
         template_params = super().generate_settings_template()
         template_params['style_settings'] = True
         template_params['locale_map'] = LOCALE_MAP
+        template_params['font_px_sizes'] = FONT_PX_SIZES
         return template_params
 
     def generate_image(self, settings, device_config):
