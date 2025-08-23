@@ -94,7 +94,7 @@
     <div class="form-group nowrap">
         <label for="monthFontSize" class="form-label">Month Font Size:</label>
         <select id="monthFontSize" name="monthFontSize" class="form-input">
-            {% for size font_px_sizes %}
+            {% for size in font_px_sizes %}
                 <option value="{{ size }}">{{ size }}px</option>
             {% endfor %}
         </select>
