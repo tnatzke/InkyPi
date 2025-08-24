@@ -62,12 +62,14 @@ class Clock(BasePlugin):
         tz = pytz.timezone(timezone_name)
         current_time = datetime.now(tz)
 
+        is_12h = device_config.get_config("time_format", default="12h") == "12h"
+
         img = None
         try:
             if clock_face == "Gradient Clock":
                 img = self.draw_conic_clock(dimensions, current_time, primary_color, secondary_color)
             elif clock_face == "Digital Clock":
-                img = self.draw_digital_clock(dimensions, current_time, primary_color, secondary_color)
+                img = self.draw_digital_clock(dimensions, current_time, is_12h, primary_color, secondary_color)
             elif clock_face == "Divided Clock":
                 img = self.draw_divided_clock(dimensions, current_time, primary_color, secondary_color)
             elif clock_face == "Word Clock":
@@ -76,10 +78,15 @@ class Clock(BasePlugin):
             logger.error(f"Failed to draw clock image: {str(e)}")
             raise RuntimeError("Failed to display clock.")
         return img
-    
-    def draw_digital_clock(self, dimensions, time, primary_color=(255,255,255), secondary_color=(0,0,0)):
+
+    def draw_digital_clock(self, dimensions, time, is_12h : bool, primary_color=(255,255,255), secondary_color=(0,0,0)):
         w,h = dimensions
-        time_str = Clock.format_time(time.hour, time.minute, zero_pad = True)
+        hour = time.hour
+        if is_12h:
+            hour = time.hour % 12
+            if hour == 0:
+                hour = 12
+        time_str = Clock.format_time(hour, time.minute, zero_pad = True)
 
         image = Image.new("RGBA", dimensions, secondary_color+(255,))
         text = Image.new("RGBA", dimensions, (0, 0, 0, 0))
