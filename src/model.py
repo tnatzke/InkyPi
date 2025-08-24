@@ -119,20 +119,21 @@ class PlaylistManager:
             logger.warning(f"Playlist '{playlist_name}' not found.")
         return False
 
-    def add_playlist(self, name, start_time=None, end_time=None):
+    def add_playlist(self, name, interval, start_time=None, end_time=None):
         """Creates and adds a new playlist with the given start and end times."""
         if not start_time:
             start_time = PlaylistManager.DEFAULT_PLAYLIST_START
         if not end_time:
             end_time = PlaylistManager.DEFAULT_PLAYLIST_END
-        self.playlists.append(Playlist(name, start_time, end_time))
+        self.playlists.append(Playlist(name, interval, start_time, end_time))
         return True
 
-    def update_playlist(self, old_name, new_name, start_time, end_time):
+    def update_playlist(self, old_name, new_name, interval, start_time, end_time):
         """Updates an existing playlist's name, start time, and end time."""
         playlist = self.get_playlist(old_name)
         if playlist:
             playlist.name = new_name
+            playlist.interval = interval
             playlist.start_time = start_time
             playlist.end_time = end_time
             return True
@@ -175,8 +176,9 @@ class Playlist:
         current_plugin_index (int): Index of the currently active plugin in the playlist.
     """
 
-    def __init__(self, name, start_time, end_time, plugins=None, current_plugin_index=None):
+    def __init__(self, name, interval, start_time, end_time, plugins=None, current_plugin_index=None):
         self.name = name
+        self.interval = interval
         self.start_time = start_time
         self.end_time = end_time
         self.plugins = [PluginInstance.from_dict(p) for p in (plugins or [])]
@@ -217,6 +219,12 @@ class Playlist:
         """Find a plugin instance by its plugin_id and name."""
         return next((p for p in self.plugins if p.plugin_id == plugin_id and p.name == name), None)
 
+    def get_current_plugin(self):
+        if self.current_plugin_index is None:
+            self.current_plugin_index = 0
+
+        return self.plugins[self.current_plugin_index]
+
     def get_next_plugin(self):
         """Returns the next plugin instance in the playlist and update the current_plugin_index."""
         if self.current_plugin_index is None:
@@ -245,6 +253,7 @@ class Playlist:
     def to_dict(self):
         return {
             "name": self.name,
+            "interval": self.interval,
             "start_time": self.start_time,
             "end_time": self.end_time,
             "plugins": [p.to_dict() for p in self.plugins],
@@ -255,6 +264,7 @@ class Playlist:
     def from_dict(cls, data):
         return cls(
             name=data["name"],
+            interval=data["interval"],
             start_time=data["start_time"],
             end_time=data["end_time"],
             plugins=data["plugins"],

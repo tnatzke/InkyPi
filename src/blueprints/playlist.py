@@ -86,22 +86,30 @@ def create_playlist():
 
     data = request.json
     playlist_name = data.get("playlist_name")
+    playlist_interval = data.get("playlist_interval")
+    playlist_interval_unit = data.get("playlist_interval_unit")
     start_time = data.get("start_time")
     end_time = data.get("end_time")
 
     if not playlist_name or not playlist_name.strip():
         return jsonify({"error": "Playlist name is required"}), 400
+    if not playlist_interval:
+        return jsonify({"error": "Playlist interval is required"}), 400
+    if not playlist_interval_unit or playlist_interval_unit not in ["minute", "hour", "day"]:
+        return jsonify({"error": "Playlist interval unit is required"}), 400
     if not start_time or not end_time:
         return jsonify({"error": "Start time and End time are required"}), 400
     if end_time <= start_time:
         return jsonify({"error": "End time must be greater than start time"}), 400
+
+    interval  = calculate_seconds(int(playlist_interval), playlist_interval_unit)
 
     try:
         playlist = playlist_manager.get_playlist(playlist_name)
         if playlist:
             return jsonify({"error": f"Playlist with name '{playlist_name}' already exists"}), 400
 
-        result = playlist_manager.add_playlist(playlist_name, start_time, end_time)
+        result = playlist_manager.add_playlist(playlist_name, interval, start_time, end_time)
         if not result:
             return jsonify({"error": "Failed to create playlist"}), 500
 
@@ -123,10 +131,20 @@ def update_playlist(playlist_name):
     data = request.get_json()
 
     new_name = data.get("new_name")
+    playlist_interval = data.get("playlist_interval")
+    playlist_interval_unit = data.get("playlist_interval_unit")
     start_time = data.get("start_time")
     end_time = data.get("end_time")
+
     if not new_name or not start_time or not end_time:
         return jsonify({"success": False, "error": "Missing required fields"}), 400
+
+    if not playlist_interval:
+        return jsonify({"error": "Playlist interval is required"}), 400
+
+    if not playlist_interval_unit or playlist_interval_unit not in ["minute", "hour", "day"]:
+        return jsonify({"error": "Playlist interval unit is required"}), 400
+
     if end_time <= start_time:
         return jsonify({"error": "End time must be greater than start time"}), 400
     
@@ -134,7 +152,9 @@ def update_playlist(playlist_name):
     if not playlist:
         return jsonify({"error": f"Playlist '{playlist_name}' does not exist"}), 400
 
-    result = playlist_manager.update_playlist(playlist_name, new_name, start_time, end_time)
+    interval = calculate_seconds(int(playlist_interval), playlist_interval_unit)
+
+    result = playlist_manager.update_playlist(playlist_name, new_name, interval, start_time, end_time)
     if not result:
         return jsonify({"error": "Failed to delete playlist"}), 500
     device_config.write_config()
