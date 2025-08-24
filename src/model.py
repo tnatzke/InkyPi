@@ -262,9 +262,15 @@ class Playlist:
 
     @classmethod
     def from_dict(cls, data):
+
+        if "interval" in data:
+            interval = data["interval"]
+        else:
+            interval = 3600
+
         return cls(
             name=data["name"],
-            interval=data["interval"],
+            interval=interval,
             start_time=data["start_time"],
             end_time=data["end_time"],
             plugins=data["plugins"],
