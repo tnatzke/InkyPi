@@ -135,6 +135,8 @@
         async function updatePlaylist() {
             let oldName = document.getElementById("editingPlaylistName").value;
             let newName = document.getElementById("playlist_name").value;
+            let playlist_interval = document.getElementById("playlist_interval").value;
+            let playlist_interval_unit = document.getElementById("playlist_interval_unit").value;
             let startTime = document.getElementById("start_time").value;
             let endTime = document.getElementById("end_time").value;
 
@@ -144,7 +146,13 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ new_name: newName, start_time: startTime, end_time: endTime })
+                    body: JSON.stringify({
+                        new_name: newName,
+                        playlist_interval: playlist_interval,
+                        playlist_interval_unit: playlist_interval_unit,
+                        start_time: startTime,
+                        end_time: endTime
+                    })
                 });
 
                 const result = await response.json();
