@@ -85,7 +85,6 @@ class RefreshTask:
                         break
 
                     playlist_manager = self.device_config.get_playlist_manager()
-                    latest_refresh = self.device_config.get_refresh_info()
                     current_dt = self._get_current_datetime()
 
                     refresh_action = None
@@ -101,7 +100,8 @@ class RefreshTask:
 
                         # handle refresh based on playlists
                         logger.info(f"Running interval refresh check. | current_time: {current_dt.strftime('%Y-%m-%d %H:%M:%S')}")
-                        playlist, plugin_instance = self._determine_next_plugin(playlist_manager, latest_refresh, current_dt)
+                        playlist, plugin_instance = self._determine_next_plugin(playlist_manager, current_dt)
+                        playlist.refresh_time = current_dt.isoformat()
                         if plugin_instance:
                             refresh_action = PlaylistRefresh(playlist, plugin_instance)
 
@@ -114,6 +114,7 @@ class RefreshTask:
                         image = refresh_action.execute(plugin, self.device_config, current_dt)
                         image_hash = compute_image_hash(image)
 
+                        latest_refresh = self.device_config.get_refresh_info()
                         refresh_info = refresh_action.get_refresh_info()
                         refresh_info.update({"refresh_time": current_dt.isoformat(), "image_hash": image_hash})
                         # check if image is the same as current image
@@ -160,7 +161,7 @@ class RefreshTask:
         tz_str = self.device_config.get_config("timezone", default="UTC")
         return datetime.now(pytz.timezone(tz_str))
 
-    def _determine_next_plugin(self, playlist_manager, latest_refresh_info, current_dt):
+    def _determine_next_plugin(self, playlist_manager, current_dt):
         """Determines the next plugin to refresh based on the active playlist, plugin cycle interval, and current time."""
         playlist = playlist_manager.determine_active_playlist(current_dt)
         if not playlist:
@@ -173,8 +174,7 @@ class RefreshTask:
             logger.info(f"Active playlist '{playlist.name}' has no plugins.")
             return None, None
 
-        latest_refresh_dt = latest_refresh_info.get_refresh_datetime()
-
+        latest_refresh_dt = playlist.get_refresh_datetime()
         refresh_interval = playlist.interval
         if not refresh_interval:
             refresh_interval = 3600

@@ -176,13 +176,22 @@ class Playlist:
         current_plugin_index (int): Index of the currently active plugin in the playlist.
     """
 
-    def __init__(self, name, interval, start_time, end_time, plugins=None, current_plugin_index=None):
+    def __init__(self, name, interval, start_time, end_time, plugins=None, current_plugin_index=None,
+                 refresh_time=None):
         self.name = name
         self.interval = interval
         self.start_time = start_time
         self.end_time = end_time
         self.plugins = [PluginInstance.from_dict(p) for p in (plugins or [])]
         self.current_plugin_index = current_plugin_index
+        self.refresh_time = refresh_time
+
+    def get_refresh_datetime(self):
+        """Returns the refresh time as a datetime object or None if not set."""
+        latest_refresh = None
+        if self.refresh_time:
+            latest_refresh = datetime.fromisoformat(self.refresh_time)
+        return latest_refresh
 
     def is_active(self, current_time):
         """Check if the playlist is active at the given time."""
@@ -257,24 +266,20 @@ class Playlist:
             "start_time": self.start_time,
             "end_time": self.end_time,
             "plugins": [p.to_dict() for p in self.plugins],
-            "current_plugin_index": self.current_plugin_index
+            "current_plugin_index": self.current_plugin_index,
+            "refresh_time" : self.refresh_time
         }
 
     @classmethod
     def from_dict(cls, data):
-
-        if "interval" in data:
-            interval = data["interval"]
-        else:
-            interval = 3600
-
         return cls(
             name=data["name"],
-            interval=interval,
+            interval=data.get("interval", 3600),
             start_time=data["start_time"],
             end_time=data["end_time"],
             plugins=data["plugins"],
-            current_plugin_index=data.get("current_plugin_index", None)
+            current_plugin_index=data.get("current_plugin_index", None),
+            refresh_time=data.get("refresh_time", None)
         )
 
 class PluginInstance:
