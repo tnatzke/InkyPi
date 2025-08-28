@@ -161,8 +161,10 @@ class PlaylistManager:
     def should_refresh(latest_refresh, interval_seconds, current_time):
         """Determines whether a refresh should occur on the interval and latest refresh time."""
         if not latest_refresh:
+            logger.info("No previous refresh, so it's time to refresh")
             return True  # No previous refresh, so it's time to refresh
 
+        logger.info(f"Latest refresh time: {latest_refresh}")
         return (current_time - latest_refresh) >= timedelta(seconds=interval_seconds)
 
 class Playlist:
