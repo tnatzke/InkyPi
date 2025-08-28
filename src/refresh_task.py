@@ -102,9 +102,6 @@ class RefreshTask:
                         logger.info(f"Running interval refresh check. | current_time: {current_dt.strftime('%Y-%m-%d %H:%M:%S')}")
                         playlist, plugin_instance = self._determine_next_plugin(playlist_manager, current_dt)
 
-                        if playlist:
-                            playlist.refresh_time = current_dt.isoformat()
-
                         if plugin_instance:
                             refresh_action = PlaylistRefresh(playlist, plugin_instance)
 
@@ -194,6 +191,7 @@ class RefreshTask:
 
         else:
             plugin = playlist.get_next_plugin()
+            playlist.refresh_time = current_dt.isoformat()
             logger.info(f"Determined next plugin. | active_playlist: {playlist.name} | plugin_instance: {plugin.name}")
 
         return playlist, plugin
