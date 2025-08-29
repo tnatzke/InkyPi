@@ -24,13 +24,26 @@ class ImageViewerApp:
         self.image_path = image_path
         self.current_hash = self.get_file_hash()
 
-        self.label = tk.Label(master)
+        self.label = tk.Label(master, font=('calibri', 28, 'bold'),
+                              text=self.get_time(),
+                              compound= tk.TOP,
+                              anchor=tk.NW,
+                              foreground='black')
         self.label.pack()
 
         self.width, self.height = self.master.winfo_screenwidth(), self.master.winfo_screenheight()
 
         self.load_image()
+
+        self.update_time()
         self.check_for_changes()
+
+    def get_time(self) -> str:
+        return time.strftime('%H:%M:%S %p')
+
+    def update_time(self):
+        self.label.config(text=self.get_time())
+        self.label.after(10000, self.update_time) # Update every 1000ms (1 second)
 
     def get_file_hash(self):
         if not os.path.exists(self.image_path):
