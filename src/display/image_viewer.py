@@ -56,7 +56,7 @@ class ImageViewerApp:
             img = Image.open(self.image_path)
             img = img.resize((self.width, self.height), Image.LANCZOS)
             self.tk_image = ImageTk.PhotoImage(img)
-            self.label.config(image=self.tk_image)
+            self.label.config(image=self.tk_image, text=self.get_time())
         except FileNotFoundError:
             self.label.config(text="Image not found!")
             self.tk_image = None
