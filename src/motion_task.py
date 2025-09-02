@@ -1,3 +1,4 @@
+import datetime
 import os
 import subprocess
 import threading
@@ -31,18 +32,22 @@ class MotionTask:
     pir: MotionSensor
 
     def __init__(self):
-        # Initialize the PIR sensor
-        self.pir = MotionSensor(self.pir_pin, queue_len=40, threshold=.9)
-        # Attach event handlers for motion and no motion
-        self.pir.when_motion = self.motion_detected_handler
-        self.pir.when_no_motion = self.no_motion_detected_handler
-        logger.info(f"PIR sensor started on GPIO {self.pir_pin}. Monitoring for motion...")
-        logger.info(f"Display will turn off after {self.no_motion_delay} seconds of no motion.")
+        # # Initialize the PIR sensor
+        # self.pir = MotionSensor(self.pir_pin, queue_len=40, threshold=.9)
+        # # Attach event handlers for motion and no motion
+        # self.pir.when_motion = self.motion_detected_handler
+        # self.pir.when_no_motion = self.no_motion_detected_handler
+        # logger.info(f"PIR sensor started on GPIO {self.pir_pin}. Monitoring for motion...")
+        # logger.info(f"Display will turn off after {self.no_motion_delay} seconds of no motion.")
 
         self.thread = None
         self.lock = threading.Lock()
         self.condition = threading.Condition(self.lock)
         self.running = False
+
+        self.start_off = datetime.time(22, 0)  # 9:00 PM
+        self.end_off = datetime.time(5, 30) # 5:30 AM
+
         os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
 
     def turn_off_monitor(self):
@@ -101,12 +106,28 @@ class MotionTask:
             logger.info("Stopping monitor task")
             self.thread.join()
 
+    def should_screen_be_off(self):
+        """
+        Checks if a current_time is within a range that might span across midnight.
+        """
+        now = datetime.datetime.now().time()
+        if self.start_off <= self.end_off:  # Range does not cross midnight
+            return self.start_off <= now <= self.end_off
+        else:  # Range crosses midnight (e.g., 22:00 - 04:00)
+            return now >= self.start_off or now <= self.end_off
+
     def run(self):
         try:
             while True:
                 with self.condition:
-                    if self.display_on and (time.time() - self.last_motion_time > self.no_motion_delay):
+
+                    if(self.should_screen_be_off() and self.display_on):
                         self.turn_off_monitor()
+                    elif not self.display_on:
+                        self.turn_on_monitor()
+
+                    # if self.display_on and (time.time() - self.last_motion_time > self.no_motion_delay):
+                    #     self.turn_off_monitor()
                     self.condition.wait(timeout=1)  # Check every second
                     if not self.running:
                         break
