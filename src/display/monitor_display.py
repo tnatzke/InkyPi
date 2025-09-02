@@ -1,13 +1,8 @@
 import logging
-import os
 import tkinter as tk
-import tempfile
 import subprocess
 import atexit
-import sys
 from pathlib import Path
-
-from PIL import Image, ImageTk
 from display.abstract_display import AbstractDisplay
 
 logger = logging.getLogger(__name__)
