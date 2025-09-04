@@ -123,7 +123,7 @@ class MotionTask:
 
                     if(self.should_screen_be_off() and self.display_on):
                         self.turn_off_monitor()
-                    elif not self.display_on:
+                    elif(not self.should_screen_be_off() and not self.display_on):
                         self.turn_on_monitor()
 
                     # if self.display_on and (time.time() - self.last_motion_time > self.no_motion_delay):
