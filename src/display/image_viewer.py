@@ -41,11 +41,11 @@ class ImageViewerApp:
         self.check_for_changes()
 
     def get_time(self) -> str:
-        return time.strftime('%H:%M:%S %p')
+        return time.strftime('%I:%M %p')
 
     def update_time(self):
         self.label_time.config(text=self.get_time())
-        self.label_time.after(1000, self.update_time) # Update every 1000ms (1 second)
+        self.label_time.after(10000, self.update_time) # Update every 1000ms (1 second)
 
     def get_file_hash(self):
         if not os.path.exists(self.image_path):
