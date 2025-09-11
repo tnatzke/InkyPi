@@ -27,8 +27,10 @@ class ImageViewerApp:
         self.label = tk.Label(master)
         self.label.pack()
 
-        self.label_time = tk.Label(master, font=('calibri', 28, 'bold'),
+        self.label_time = tk.Label(master, font=('calibri', 48, 'bold'),
                               text=self.get_time(),
+                                background="#ffffff",
+                                   padx=0, pady=0,
                               foreground='black')
         self.label_time.place(x=1620, y=50)
 
