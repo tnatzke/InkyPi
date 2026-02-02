@@ -57,7 +57,10 @@ class Wpotd(BasePlugin):
             logger.error("Failed to download WPOTD image.")
             raise RuntimeError("Failed to download WPOTD image.")
         if settings.get("shrinkToFitWpotd") == "true":
-            max_width, max_height = device_config.get_resolution()
+            dimensions = device_config.get_resolution()
+            if device_config.get_config("orientation") == "vertical":
+                dimensions = dimensions[::-1]
+            max_width, max_height = dimensions
             image = self._shrink_to_fit(image, max_width, max_height)
             logger.info(f"Image resized to fit device dimensions: {max_width},{max_height}")
 
@@ -74,11 +77,11 @@ class Wpotd(BasePlugin):
             return datetime.today().date()
 
     def _download_image(self, url: str) -> Image.Image:
-        try:
-            if url.lower().endswith(".svg"):
-                logger.warning("SVG format is not supported by Pillow. Skipping image download.")
-                raise RuntimeError("Unsupported image format: SVG.")
+        if url.lower().endswith(".svg"):
+            logger.warning("SVG format is not supported by Pillow. Skipping image download.")
+            raise RuntimeError("Unsupported image format: SVG.")
 
+        try:
             response = self.SESSION.get(url, headers=self.HEADERS, timeout=10)
             response.raise_for_status()
             return Image.open(BytesIO(response.content))

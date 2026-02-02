@@ -1,16 +1,17 @@
 import requests
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps, ImageFilter
 from io import BytesIO
 import os
 import logging
 import hashlib
 import tempfile
 import subprocess
+import shutil
 
 logger = logging.getLogger(__name__)
 
 def get_image(image_url):
-    response = requests.get(image_url)
+    response = requests.get(image_url, timeout=30)
     img = None
     if 200 <= response.status_code < 300 or response.status_code == 304:
         img = Image.open(BytesIO(response.content))
@@ -61,6 +62,11 @@ def resize_image(image, desired_size, image_settings=[]):
     return image.resize((desired_width, desired_height), Image.LANCZOS)
 
 def apply_image_enhancement(img, image_settings={}):
+    # Convert image to RGB mode if necessary for enhancement operations
+    # ImageEnhance requires RGB mode for operations like blend
+    if img.mode not in ('RGB', 'L'):
+        img = img.convert('RGB')
+        
 
     # Apply Brightness
     img = ImageEnhance.Brightness(img).enhance(image_settings.get("brightness", 1.0))
@@ -100,39 +106,58 @@ def take_screenshot_html(html_str, dimensions, timeout_ms=None):
 
     return image
 
+def _find_chromium_binary():
+    """Find the first available Chromium-based binary in system PATH."""
+    candidates = ["chromium-headless-shell", "chromium", "chrome"]
+    for candidate in candidates:
+        path = shutil.which(candidate)
+        if path:
+            logger.debug(f"Found browser binary: {candidate} at {path}")
+            return candidate
+    return None
+
+
 def take_screenshot(target, dimensions, timeout_ms=None):
     image = None
     try:
+        # Find available browser binary
+        browser = _find_chromium_binary()
+        if not browser:
+            logger.error("No Chromium-based browser found. Install chromium, chromium-headless-shell, or chrome.")
+            return None
+
         # Create a temporary output file for the screenshot
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as img_file:
             img_file_path = img_file.name
 
         command = [
-            "chromium-headless-shell",
+            browser,
             target,
             "--headless",
             f"--screenshot={img_file_path}",
             f"--window-size={dimensions[0]},{dimensions[1]}",
-            "--no-sandbox",
-            "--disable-gpu",
-            "--disable-software-rasterizer",
-            "--disable-background-networking",
             "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--use-gl=swiftshader",
             "--hide-scrollbars",
-            "--single-process",
+            "--in-process-gpu",
+            "--js-flags=--jitless",
+            "--disable-zero-copy",
+            "--disable-gpu-memory-buffer-compositor-resources",
             "--disable-extensions",
             "--disable-plugins",
             "--mute-audio",
-            "--js-flags=--max_old_space_size=128"
+            "--renderer-process-limit=1",
+            "--no-zygote",
+            "--no-sandbox"
         ]
         if timeout_ms:
             command.append(f"--timeout={timeout_ms}")
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(command, capture_output=True, check=False)
 
         # Check if the process failed or the output file is missing
         if result.returncode != 0 or not os.path.exists(img_file_path):
-            logger.error("Failed to take screenshot:")
-            logger.error(result.stderr.decode('utf-8'))
+            logger.error(f"Failed to take screenshot (return code: {result.returncode})")
             return None
 
         # Load the image using PIL
@@ -144,5 +169,14 @@ def take_screenshot(target, dimensions, timeout_ms=None):
 
     except Exception as e:
         logger.error(f"Failed to take screenshot: {str(e)}")
-    
+
     return image
+
+def pad_image_blur(img: Image, dimensions: tuple[int, int]) -> Image:
+    bkg = ImageOps.fit(img, dimensions)
+    bkg = bkg.filter(ImageFilter.BoxBlur(8))
+    img = ImageOps.contain(img, dimensions)
+
+    img_size = img.size
+    bkg.paste(img, ((dimensions[0] - img_size[0]) // 2, (dimensions[1] - img_size[1]) // 2))
+    return bkg
