@@ -4,6 +4,8 @@ import os
 import pygame
 import time
 
+os.environ['DISPLAY'] = ':0.0'
+
 # Set the SDL video driver to use the framebuffer
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb0')
