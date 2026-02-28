@@ -1,6 +1,6 @@
 [Unit]
 Description=InkyPi App
-After=network-online.target
+After=network-online.target graphical.target
 Wants=network-online.target
 
 [Service]
