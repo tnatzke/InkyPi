@@ -1,13 +1,9 @@
 import logging
 import os
-import tkinter as tk
+import pygame
 import tempfile
-import subprocess
 import atexit
-import sys
-from pathlib import Path
 
-from PIL import Image, ImageTk
 from display.abstract_display import AbstractDisplay
 
 logger = logging.getLogger(__name__)
@@ -17,7 +13,9 @@ class MonitorDisplay(AbstractDisplay):
     root = None
     screen_width: int = None
     screen_height: int = None
+    size: tuple = None
     label = None
+    screen = None
 
     """
     Handles the Inky e-paper display.
@@ -37,20 +35,20 @@ class MonitorDisplay(AbstractDisplay):
         Raises:
             ValueError: If the resolution cannot be retrieved or stored.
         """
-
-        root = tk.Tk()
-        root.attributes('-fullscreen', True)
-        self.screen_width = root.winfo_screenwidth()
-        self.screen_height = root.winfo_screenheight()
+        # Set the SDL video driver to use the framebuffer
+        os.putenv('SDL_VIDEODRIVER', 'fbcon')
+        os.putenv('SDL_FBDEV', '/dev/fb0')
+        pygame.display.init()
 
         self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
 
-        # Define the path to the subprocess script and its arguments
-        subprocess_script = ["python", Path(__file__).parent.joinpath("image_viewer.py").resolve(), "-f", self.tmp_file,
-                             "-t", "3000"]
+        # Get screen dimensions and create a fullscreen surface
+        self.screen_width = pygame.display.Info().current_w
+        self.screen_height = pygame.display.Info().current_h
+        self.size = (self.screen_width, self.screen_height)
 
-        # Start the subprocess
-        self.viewer = subprocess.Popen(subprocess_script)
+        self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+
         atexit.register(self.cleanup_display)
 
         # store display resolution in device config
@@ -62,9 +60,9 @@ class MonitorDisplay(AbstractDisplay):
 
     def display_image(self, image, image_settings=[]):
         """
-        Displays the provided image on the Inky display.
+        Displays the provided image on the Monitor display.
 
-        The image has been processed by adjusting orientation and resizing 
+        The image has been processed by adjusting orientation and resizing
         before being sent to the display.
 
         Args:
@@ -75,20 +73,14 @@ class MonitorDisplay(AbstractDisplay):
             ValueError: If no image is provided.
         """
         with open(self.tmp_file, mode="w+b") as temp_file:
+            # Load and display the image
             image.save(temp_file, format="PNG")
 
-    def terminate_subprocess(self):
-        if self.viewer.poll() is None:  # Check if the subprocess is still running
-            print(f"Terminating subprocess (PID: {self.viewer.pid})...")
-            self.viewer.terminate()
-            self.viewer.wait(timeout=5)  # Wait for a short period for graceful termination
-            if self.viewer.poll() is None:
-                print("Subprocess did not terminate gracefully, killing...")
-                self.viewer.kill()
-        else:
-            print("Subprocess already terminated.")
+            pygame_image = pygame.image.load(temp_file)
+            pygame_image = pygame.transform.scale(image, self.size)  # Scale to fit screen
+            self.screen.blit(pygame_image, (0, 0))
+            pygame.display.update()
+
 
     def cleanup_display(self):
-        self.terminate_subprocess()
-        if os.path.exists(self.tmp_file):
-            os.remove(self.tmp_file)
+        pygame.quit()
