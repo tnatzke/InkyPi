@@ -42,6 +42,9 @@ class MonitorDisplay(AbstractDisplay):
 
         self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
 
+        # Initialize only the display first to check for errors
+        pygame.display.init()
+
         # Get screen dimensions and create a fullscreen surface
         info = pygame.display.Info()
         self.screen_width = info.current_w
