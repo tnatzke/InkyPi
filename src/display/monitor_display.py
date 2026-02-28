@@ -37,6 +37,7 @@ class MonitorDisplay(AbstractDisplay):
         """
         # Force SDL to use the KMSDRM driver for console output
         os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
+        os.environ["SDL_VIDEO_DISPLAY"] = "0"
         pygame.init()
 
         self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
