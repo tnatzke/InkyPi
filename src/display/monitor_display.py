@@ -35,16 +35,16 @@ class MonitorDisplay(AbstractDisplay):
         Raises:
             ValueError: If the resolution cannot be retrieved or stored.
         """
-        # Set the SDL video driver to use the framebuffer
-        os.putenv('SDL_VIDEODRIVER', 'fbcon')
-        os.putenv('SDL_FBDEV', '/dev/fb0')
-        pygame.display.init()
+        # Force SDL to use the KMSDRM driver for console output
+        os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
+        pygame.init()
 
         self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
 
         # Get screen dimensions and create a fullscreen surface
-        self.screen_width = pygame.display.Info().current_w
-        self.screen_height = pygame.display.Info().current_h
+        info = pygame.display.Info()
+        self.screen_width = info.current_w
+        self.screen_height = info.current_h
         self.size = (self.screen_width, self.screen_height)
 
         self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
