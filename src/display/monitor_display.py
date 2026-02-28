@@ -36,6 +36,7 @@ class MonitorDisplay(AbstractDisplay):
             ValueError: If the resolution cannot be retrieved or stored.
         """
         # Force SDL to use the KMSDRM driver for console output
+        logger.info("Initializing Pygame")
         os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
         os.environ["SDL_VIDEO_DISPLAY"] = "0"
         pygame.init()
@@ -43,6 +44,7 @@ class MonitorDisplay(AbstractDisplay):
         self.tmp_file = tempfile.NamedTemporaryFile(suffix=".png").name
 
         # Initialize only the display first to check for errors
+        logger.info("Initializing Pygame display")
         pygame.display.init()
 
         # Get screen dimensions and create a fullscreen surface
@@ -50,6 +52,7 @@ class MonitorDisplay(AbstractDisplay):
         self.screen_width = info.current_w
         self.screen_height = info.current_h
         self.size = (self.screen_width, self.screen_height)
+        logger.info("Screen Dimensions: {}x{}".format(self.screen_width, self.screen_height))
 
         self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
 
@@ -79,11 +82,12 @@ class MonitorDisplay(AbstractDisplay):
         with open(self.tmp_file, mode="w+b") as temp_file:
             # Load and display the image
             image.save(temp_file, format="PNG")
-
+            logger.info("Image saved to {}".format(self.tmp_file))
             pygame_image = pygame.image.load(temp_file)
             pygame_image = pygame.transform.scale(image, self.size)  # Scale to fit screen
             self.screen.blit(pygame_image, (0, 0))
             pygame.display.update()
+            logger.info("Image displayed")
 
 
     def cleanup_display(self):
