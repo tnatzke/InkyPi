@@ -5,6 +5,11 @@ Wants=network-online.target
 
 [Service]
 User=root
+Environment=SDL_VIDEODRIVER=kmsdrm
+Environment=SDL_VIDEO_DISPLAY=0
+# These two lines often fix the "not initialized" error in services
+StandardInput=tty
+TTYPath=/dev/tty1
 RuntimeDirectory=inkypi
 WorkingDirectory=/run/inkypi
 ExecStart=/usr/local/bin/inkypi run
