@@ -12,6 +12,7 @@ os.environ["SDL_VIDEO_DISPLAY"] = "0"
 
 pygame.init()
 pygame.display.init()
+pygame.mouse.set_visible(False)
 
 # Get screen dimensions and create a fullscreen surface
 size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
