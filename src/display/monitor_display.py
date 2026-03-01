@@ -84,7 +84,7 @@ class MonitorDisplay(AbstractDisplay):
             # Load and display the image
             image.save(temp_file, format="PNG")
             logger.info("Image saved to {}".format(self.tmp_file))
-            pygame_image = pygame.image.load(temp_file)
+            pygame_image = pygame.image.load(self.tmp_file)
             pygame_image = pygame.transform.scale(pygame_image, self.size)  # Scale to fit screen
             self.screen.blit(pygame_image, (0, 0))
             pygame.display.update()
