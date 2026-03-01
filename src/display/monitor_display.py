@@ -47,6 +47,7 @@ class MonitorDisplay(AbstractDisplay):
         # Initialize only the display first to check for errors
         logger.info("Initializing Pygame display")
         pygame.display.init()
+        pygame.mixer.quit()
         pygame.mouse.set_visible(False)
 
         # Get screen dimensions and create a fullscreen surface
