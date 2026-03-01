@@ -215,7 +215,7 @@ setup_earlyoom_service() {
 
 create_venv(){
   echo "Creating python virtual environment. "
-  python3 -m venv "$VENV_PATH"
+  python3 -m venv --system-site-packages "$VENV_PATH"
   $VENV_PATH/bin/python -m pip install --upgrade pip setuptools wheel > /dev/null
   $VENV_PATH/bin/python -m pip install -r $PIP_REQUIREMENTS_FILE -qq > /dev/null &
   show_loader "\tInstalling python dependencies. "
