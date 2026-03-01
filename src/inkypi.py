@@ -118,9 +118,8 @@ if __name__ == '__main__':
         display_manager.display_image(img)
         device_config.update_value("startup", False, write=True)
 
-        logger.info("Starting InkyPi Web Server")
-        server_thread = threading.Thread(target=run_web_server, daemon=True)
-        server_thread.start()
+    logger.info("Starting InkyPi Web Server")
+    server_thread = threading.Thread(target=run_web_server, daemon=True)
+    server_thread.start()
 
-        refresh_task.run()
-
+    refresh_task.run()
