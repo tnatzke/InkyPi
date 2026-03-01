@@ -86,6 +86,7 @@ register_heif_opener()
 
 if __name__ == '__main__':
 
+    logger.info("Starting InkyPi Display Server")
     # start the background refresh task
     refresh_task.start()
 
