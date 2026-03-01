@@ -7,9 +7,10 @@ import time
 os.environ['DISPLAY'] = ':0.0'
 
 # Set the SDL video driver to use the framebuffer
-os.putenv('SDL_VIDEODRIVER', 'fbcon')
-os.putenv('SDL_FBDEV', '/dev/fb0')
+os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
+os.environ["SDL_VIDEO_DISPLAY"] = "0"
 
+pygame.init()
 pygame.display.init()
 
 # Get screen dimensions and create a fullscreen surface
