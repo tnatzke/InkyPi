@@ -19,7 +19,7 @@ size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
 screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
 
 # Load and display the image
-image = pygame.image.load("/home/tmn/projects/InkyPi/docs/images/inky_clock.jpg")
+image = pygame.image.load("/tmp/tmpus9kbwmy.png")
 image = pygame.transform.scale(image, size) # Scale to fit screen
 screen.blit(image, (0, 0))
 pygame.display.update()
