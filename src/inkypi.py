@@ -22,6 +22,7 @@ import argparse
 from utils.app_utils import generate_startup_image
 from flask import Flask, request, send_from_directory
 from werkzeug.serving import is_running_from_reloader
+from motion_task import MotionTask
 from config import Config
 from display.display_manager import DisplayManager
 from refresh_task import RefreshTask
@@ -67,6 +68,7 @@ app.jinja_loader = ChoiceLoader([FileSystemLoader(directory) for directory in te
 device_config = Config()
 display_manager = DisplayManager(device_config)
 refresh_task = RefreshTask(device_config, display_manager)
+motion_task = MotionTask()
 
 load_plugins(device_config.get_plugins())
 
@@ -74,6 +76,7 @@ load_plugins(device_config.get_plugins())
 app.config['DEVICE_CONFIG'] = device_config
 app.config['DISPLAY_MANAGER'] = display_manager
 app.config['REFRESH_TASK'] = refresh_task
+app.config['MOTION_TASK'] = motion_task
 
 # Set additional parameters
 app.config['MAX_FORM_PARTS'] = 10_000
@@ -110,6 +113,7 @@ def run_web_server():
 if __name__ == '__main__':
 
     logger.info("Starting InkyPi Display Server")
+    motion_task.start()
 
     # display default inkypi image on startup
     if device_config.get_config("startup") is True:
@@ -118,8 +122,12 @@ if __name__ == '__main__':
         display_manager.display_image(img)
         device_config.update_value("startup", False, write=True)
 
-    logger.info("Starting InkyPi Web Server")
-    server_thread = threading.Thread(target=run_web_server, daemon=True)
-    server_thread.start()
+    try:
+        logger.info("Starting InkyPi Web Server")
+        server_thread = threading.Thread(target=run_web_server, daemon=True)
+        server_thread.start()
 
-    refresh_task.run()
+        refresh_task.run()
+    finally:
+        logger.info("Stopping InkyPi Service")
+        motion_task.stop()
