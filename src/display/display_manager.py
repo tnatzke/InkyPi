@@ -26,7 +26,7 @@ class DisplayManager:
     def __init__(self, device_config):
 
         """
-        Initializes the display manager and selects the correct display type 
+        Initializes the display manager and selects the correct display type
         based on the configuration.
 
         Args:
@@ -35,20 +35,21 @@ class DisplayManager:
         Raises:
             ValueError: If an unsupported display type is specified.
         """
-        
+
         self.device_config = device_config
-     
+
         display_type = device_config.get_config("display_type", default="inky")
 
+        logger.info("Using display type '%s'" % display_type)
         if display_type == "mock":
             self.display = MockDisplay(device_config)
         elif display_type == "inky":
             self.display = InkyDisplay(device_config)
         elif display_type == "monitor":
             self.display = MonitorDisplay(device_config)
-        elif fnmatch.fnmatch(display_type, "epd*in*"):  
+        elif fnmatch.fnmatch(display_type, "epd*in*"):
             # derived from waveshare epd - we assume here that will be consistent
-            # otherwise we will have to enshring the manufacturer in the 
+            # otherwise we will have to enshring the manufacturer in the
             # display_type and then have a display_model parameter.  Will leave
             # that for future use if the need arises.
             #
@@ -58,7 +59,7 @@ class DisplayManager:
             raise ValueError(f"Unsupported display type: {display_type}")
 
     def display_image(self, image, image_settings=[]):
-        
+
         """
         Delegates image rendering to the appropriate display instance.
 
@@ -72,7 +73,7 @@ class DisplayManager:
 
         if not hasattr(self, "display"):
             raise ValueError("No valid display instance initialized.")
-        
+
         # Save the image
         logger.info(f"Saving image to {self.device_config.current_image_file}")
         image.save(self.device_config.current_image_file)
